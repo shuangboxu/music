@@ -20,9 +20,9 @@
 </head>
 <body>
   <h1>🎵 音乐搜索 🎵</h1>
-     <p style="color: #555; text-align: center;">QQ音乐平台搜索</p>
+  <p style="color: #555; text-align: center;">QQ音乐平台搜索</p>
   <div id="searchBox">
-    <input type="text" id="songInput" placeholder="请输入歌曲名称（可加歌手名）" size="23">
+    <input type="text" id="songInput" placeholder="请输入歌曲名称/歌手名" size="16">
     显示数量：
     <select id="numSelect">
       <option value="5">5</option>
@@ -31,6 +31,7 @@
       <option value="30">30</option>
     </select>
     <button onclick="searchList()">搜索歌曲</button>
+    <button onclick="searchAndLoadAll()">加载歌曲详细信息</button>
   </div>
   <div id="results"></div>
 
@@ -41,9 +42,12 @@
     async function searchList() {
       const songName = document.getElementById("songInput").value.trim();
       const num = document.getElementById("numSelect").value;
-      if (!songName) return alert("请输入歌曲名！");
+      if (!songName) {
+        alert("请输入歌曲名！");
+        return false;
+      }
       currentQuery = songName;
-      currentNum = num;
+      currentNum = parseInt(num);
 
       const url = `http://lpz.chatc.vip/apiqq.php?msg=${encodeURIComponent(songName)}&type=json&num=${num}`;
       const resultsDiv = document.getElementById("results");
@@ -57,13 +61,13 @@
           json = JSON.parse(text);
         } catch (err) {
           resultsDiv.innerHTML = `<pre>${text}</pre>`;
-          return;
+          return false;
         }
 
         const songList = Array.isArray(json) ? json : (json.data || []);
         if (!songList.length) {
           resultsDiv.innerHTML = "未找到相关歌曲";
-          return;
+          return false;
         }
 
         resultsDiv.innerHTML = "";
@@ -81,9 +85,11 @@
           `;
           resultsDiv.appendChild(card);
         }
+        return true;
       } catch (err) {
         console.error(err);
         resultsDiv.innerHTML = "搜索失败，请稍后重试";
+        return false;
       }
     }
 
@@ -120,6 +126,19 @@
       } catch (err) {
         console.error(err);
         playerDiv.innerHTML = "加载失败";
+      }
+    }
+
+    function loadAllSongs() {
+      for (let i = 1; i <= currentNum; i++) {
+        loadAndPlay(i);
+      }
+    }
+
+    async function searchAndLoadAll() {
+      const success = await searchList();
+      if (success) {
+        loadAllSongs();
       }
     }
   </script>
