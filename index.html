@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>多平台视频搜索 + VIP解析工具</title>
+  <style>
+    body {
+      font-family: "微软雅黑", sans-serif;
+      background: #f2f2f2;
+      padding: 20px;
+    }
+    h2 {
+      color: #333;
+    }
+    input, button, select {
+      padding: 8px;
+      margin: 8px 0;
+      font-size: 16px;
+    }
+    iframe {
+      width: 100%;
+      height: 300px;
+      border: 1px solid #ccc;
+      margin-top: 10px;
+    }
+    .frame-group {
+      margin-bottom: 30px;
+    }
+    .collapsible {
+      background-color: #eee;
+      color: #333;
+      cursor: pointer;
+      padding: 10px;
+      border: none;
+      text-align: left;
+      outline: none;
+      font-size: 16px;
+      width: 100%;
+      margin-top: 10px;
+    }
+    .active, .collapsible:hover {
+      background-color: #ccc;
+    }
+    .content {
+      padding: 0 15px;
+      display: none;
+      overflow: hidden;
+      background-color: #f9f9f9;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>不要转发哈</h2>
+
+  <label for="videoUrl">粘贴链接：</label><br>
+  <input type="text" id="videoUrl" placeholder="https://v.youku.com/..." size="50"><br>
+
+  <label for="interfaceList">选择解析接口：</label><br>
+  <select id="interfaceList">
+    <option value="https://jx.xmflv.com/?url=">虾米解析</option>
+  </select><br>
+
+  <button onclick="parseVideo()">立即解析</button>
+
+  <button class="collapsible">多平台资源搜索（点击展开/收起）</button>
+  <div class="content">
+    <p>如果你想知道电影在哪个平台可以观看，可以先通过下方的搜索功能尝试搜索。复制你想要的链接后，粘贴到上面的输入框中进行VIP解析播放。</p>
+    <p>⚠️ 优酷由于安全策略不允许内嵌搜索页面，因此只能单独跳转到新标签页进行搜索。</p>
+
+    <label for="searchKeyword">输入视频关键词：</label><br>
+    <input type="text" id="searchKeyword" placeholder="例如：哪吒2" size="50">
+    <button onclick="showAllSearchResults()">搜索所有平台</button>
+
+    <div class="frame-group">
+      <h3>优酷搜索结果（需手动新标签打开）</h3>
+      <button onclick="openYoukuSearch()">打开优酷搜索</button>
+    </div>
+
+    <div class="frame-group">
+      <h3>爱奇艺搜索结果</h3>
+      <iframe id="iqiyiFrame"></iframe>
+    </div>
+
+    <div class="frame-group">
+      <h3>腾讯视频搜索结果</h3>
+      <iframe id="tencentFrame"></iframe>
+    </div>
+  </div>
+
+  <script>
+    function openYoukuSearch() {
+      const keyword = document.getElementById('searchKeyword').value.trim();
+      if (!keyword) {
+        alert("请输入关键词");
+        return;
+      }
+      const query = encodeURIComponent(keyword);
+      const url = `https://so.youku.com/search_video/q_${query}`;
+      window.open(url, '_blank');
+    }
+
+    function showAllSearchResults() {
+      const keyword = document.getElementById('searchKeyword').value.trim();
+      if (!keyword) {
+        alert("请输入关键词");
+        return;
+      }
+      const query = encodeURIComponent(keyword);
+      document.getElementById('iqiyiFrame').src = `https://so.iqiyi.com/so/q_${query}`;
+      document.getElementById('tencentFrame').src = `https://v.qq.com/x/search/?q=${query}`;
+    }
+
+    function parseVideo() {
+      let url = document.getElementById('videoUrl').value.trim();
+      const api = document.getElementById('interfaceList').value;
+
+      if (!url.startsWith("http")) {
+        alert("请输入正确的视频链接");
+        return;
+      }
+
+      const finalUrl = api + encodeURIComponent(url);
+      window.open(finalUrl, '_blank');
+    }
+
+    // 折叠功能
+    document.addEventListener('DOMContentLoaded', function () {
+      const coll = document.querySelector('.collapsible');
+      const content = document.querySelector('.content');
+      coll.addEventListener('click', function () {
+        this.classList.toggle('active');
+        if (content.style.display === 'block') {
+          content.style.display = 'none';
+        } else {
+          content.style.display = 'block';
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>
