@@ -1,144 +1,127 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>多平台视频搜索 + VIP解析工具</title>
+  <title>音乐搜索</title>
   <style>
-    body {
-      font-family: "微软雅黑", sans-serif;
-      background: #f2f2f2;
-      padding: 20px;
+    body { font-family: Arial; background: #f0f0f0; padding: 20px; }
+    h1 { text-align: center; }
+    #searchBox { text-align: center; margin-bottom: 20px; }
+    input[type="text"], select { padding: 10px; font-size: 16px; }
+    button { padding: 10px 15px; font-size: 16px; margin-left: 5px; cursor: pointer; }
+    .song-card {
+      background: white; padding: 15px; margin: 10px auto; border-radius: 8px;
+      max-width: 600px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
-    h2 {
-      color: #333;
-    }
-    input, button, select {
-      padding: 8px;
-      margin: 8px 0;
-      font-size: 16px;
-    }
-    iframe {
-      width: 100%;
-      height: 300px;
-      border: 1px solid #ccc;
-      margin-top: 10px;
-    }
-    .frame-group {
-      margin-bottom: 30px;
-    }
-    .collapsible {
-      background-color: #eee;
-      color: #333;
-      cursor: pointer;
-      padding: 10px;
-      border: none;
-      text-align: left;
-      outline: none;
-      font-size: 16px;
-      width: 100%;
-      margin-top: 10px;
-    }
-    .active, .collapsible:hover {
-      background-color: #ccc;
-    }
-    .content {
-      padding: 0 15px;
-      display: none;
-      overflow: hidden;
-      background-color: #f9f9f9;
-      border: 1px solid #ccc;
-    }
+    .song-title { font-weight: bold; }
+    .song-actions { margin-top: 10px; }
+    audio { width: 100%; margin-top: 10px; }
   </style>
 </head>
 <body>
-
-  <h2>不要转发哈</h2>
-
-  <label for="videoUrl">粘贴链接：</label><br>
-  <input type="text" id="videoUrl" placeholder="https://v.youku.com/..." size="50"><br>
-
-  <label for="interfaceList">选择解析接口：</label><br>
-  <select id="interfaceList">
-    <option value="https://jx.xmflv.com/?url=">虾米解析</option>
-  </select><br>
-
-  <button onclick="parseVideo()">立即解析</button>
-
-  <button class="collapsible">多平台资源搜索（点击展开/收起）</button>
-  <div class="content">
-    <p>如果你想知道电影在哪个平台可以观看，可以先通过下方的搜索功能尝试搜索。复制你想要的链接后，粘贴到上面的输入框中进行VIP解析播放。</p>
-    <p>⚠️ 优酷由于安全策略不允许内嵌搜索页面，因此只能单独跳转到新标签页进行搜索。</p>
-
-    <label for="searchKeyword">输入视频关键词：</label><br>
-    <input type="text" id="searchKeyword" placeholder="例如：哪吒2" size="50">
-    <button onclick="showAllSearchResults()">搜索所有平台</button>
-
-    <div class="frame-group">
-      <h3>优酷搜索结果（需手动新标签打开）</h3>
-      <button onclick="openYoukuSearch()">打开优酷搜索</button>
-    </div>
-
-    <div class="frame-group">
-      <h3>爱奇艺搜索结果</h3>
-      <iframe id="iqiyiFrame"></iframe>
-    </div>
-
-    <div class="frame-group">
-      <h3>腾讯视频搜索结果</h3>
-      <iframe id="tencentFrame"></iframe>
-    </div>
+  <h1>🎵 音乐搜索 🎵</h1>
+     <p style="color: #555; text-align: center;">QQ音乐平台搜索</p>
+  <div id="searchBox">
+    <input type="text" id="songInput" placeholder="请输入歌曲名称（可加歌手名）" size="23">
+    显示数量：
+    <select id="numSelect">
+      <option value="5">5</option>
+      <option value="10" selected>10</option>
+      <option value="20">20</option>
+      <option value="30">30</option>
+    </select>
+    <button onclick="searchList()">搜索歌曲</button>
   </div>
+  <div id="results"></div>
 
   <script>
-    function openYoukuSearch() {
-      const keyword = document.getElementById('searchKeyword').value.trim();
-      if (!keyword) {
-        alert("请输入关键词");
-        return;
-      }
-      const query = encodeURIComponent(keyword);
-      const url = `https://so.youku.com/search_video/q_${query}`;
-      window.open(url, '_blank');
-    }
+    let currentQuery = "";
+    let currentNum = 10;
 
-    function showAllSearchResults() {
-      const keyword = document.getElementById('searchKeyword').value.trim();
-      if (!keyword) {
-        alert("请输入关键词");
-        return;
-      }
-      const query = encodeURIComponent(keyword);
-      document.getElementById('iqiyiFrame').src = `https://so.iqiyi.com/so/q_${query}`;
-      document.getElementById('tencentFrame').src = `https://v.qq.com/x/search/?q=${query}`;
-    }
+    async function searchList() {
+      const songName = document.getElementById("songInput").value.trim();
+      const num = document.getElementById("numSelect").value;
+      if (!songName) return alert("请输入歌曲名！");
+      currentQuery = songName;
+      currentNum = num;
 
-    function parseVideo() {
-      let url = document.getElementById('videoUrl').value.trim();
-      const api = document.getElementById('interfaceList').value;
+      const url = `http://lpz.chatc.vip/apiqq.php?msg=${encodeURIComponent(songName)}&type=json&num=${num}`;
+      const resultsDiv = document.getElementById("results");
+      resultsDiv.innerHTML = "加载中...";
 
-      if (!url.startsWith("http")) {
-        alert("请输入正确的视频链接");
-        return;
-      }
-
-      const finalUrl = api + encodeURIComponent(url);
-      window.open(finalUrl, '_blank');
-    }
-
-    // 折叠功能
-    document.addEventListener('DOMContentLoaded', function () {
-      const coll = document.querySelector('.collapsible');
-      const content = document.querySelector('.content');
-      coll.addEventListener('click', function () {
-        this.classList.toggle('active');
-        if (content.style.display === 'block') {
-          content.style.display = 'none';
-        } else {
-          content.style.display = 'block';
+      try {
+        const res = await fetch(url);
+        const text = await res.text();
+        let json;
+        try {
+          json = JSON.parse(text);
+        } catch (err) {
+          resultsDiv.innerHTML = `<pre>${text}</pre>`;
+          return;
         }
-      });
-    });
-  </script>
 
+        const songList = Array.isArray(json) ? json : (json.data || []);
+        if (!songList.length) {
+          resultsDiv.innerHTML = "未找到相关歌曲";
+          return;
+        }
+
+        resultsDiv.innerHTML = "";
+        for (let i = 0; i < songList.length; i++) {
+          const item = songList[i];
+          const singer = item.song_singer || "未知歌手";
+          const card = document.createElement("div");
+          card.className = "song-card";
+          card.innerHTML = `
+            <div class="song-title">${i + 1}. 歌手：${singer}</div>
+            <div class="song-actions">
+              <button onclick="loadAndPlay(${i + 1})">🎧 加载播放</button>
+              <div id="player-${i + 1}"></div>
+            </div>
+          `;
+          resultsDiv.appendChild(card);
+        }
+      } catch (err) {
+        console.error(err);
+        resultsDiv.innerHTML = "搜索失败，请稍后重试";
+      }
+    }
+
+    async function loadAndPlay(index) {
+      const url = `http://lpz.chatc.vip/apiqq.php?msg=${encodeURIComponent(currentQuery)}&n=${index}&type=json&br=1`;
+      const playerDiv = document.getElementById(`player-${index}`);
+      playerDiv.innerHTML = "正在加载...";
+
+      try {
+        const res = await fetch(url);
+        const song = await res.json();
+
+        if (song.code !== 200 || !song.data || !song.data.music_url) {
+          playerDiv.innerHTML = "获取播放链接失败";
+          return;
+        }
+
+        const m = song.data;
+        let platform = "未知平台";
+        if (m.link.includes("qq")) platform = "QQ音乐";
+        else if (m.link.includes("kugou")) platform = "酷狗音乐";
+        else if (m.link.includes("netease")) platform = "网易云音乐";
+
+        playerDiv.innerHTML = `
+          <img src="${m.cover}" alt="封面" style="width:80px;float:left;margin-right:10px;">
+          <div style="overflow:hidden;">
+            <div><strong>${m.song_name}</strong> - ${m.song_singer}（${platform}）</div>
+            <div>音质：${m.quality || "未知"}</div>
+            <audio controls src="${m.music_url}"></audio>
+            <br><a href="${m.music_url}" download target="_blank">⬇️ 下载</a>
+            <details style="margin-top:8px;"><summary>歌词</summary><pre>${m.lyric || "暂无歌词"}</pre></details>
+          </div>
+        `;
+      } catch (err) {
+        console.error(err);
+        playerDiv.innerHTML = "加载失败";
+      }
+    }
+  </script>
 </body>
 </html>
