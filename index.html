@@ -79,7 +79,7 @@
           card.innerHTML = `
             <div class="song-title">${i + 1}. 歌手：${singer}</div>
             <div class="song-actions">
-              <button onclick="loadAndPlay(${i + 1})">🎧 加载播放</button>
+              <button onclick="loadAndPlay(${i + 1})">🎧 加载</button>
               <div id="player-${i + 1}"></div>
             </div>
           `;
@@ -141,6 +141,14 @@
         loadAllSongs();
       }
     }
+
+     // 监听输入框回车事件
+    document.getElementById("songInput").addEventListener("keydown", function (event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        searchAndLoadAll();
+      }
+    });
   </script>
 </body>
 </html>
